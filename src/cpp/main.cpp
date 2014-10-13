@@ -71,6 +71,7 @@ int main(int argc, char *argv[]){
 		bool printStats = false;
 		SudokuBoard::Difficulty difficulty = SudokuBoard::UNKNOWN;
 		SudokuBoard::Symmetry symmetry = SudokuBoard::NONE;
+		SudokuBoard::Type type = SudokuBoard::NORMAL;
 
 		// Read the arguments and set the options
 		{for (int i=1; i<argc; i++){
@@ -115,6 +116,22 @@ int main(int argc, char *argv[]){
 					}
 					i++;
 				}
+			} else if (!strcmp(argv[i],"--type")){
+				if (argc <= i+1){
+					cout << "Please specify a type." << endl;
+					return 1;
+				}else if(!strcmp(argv[i+1],"NORMAL")){
+					type = SudokuBoard::NORMAL;
+				}else if(!strcmp(argv[i+1],"xsudoku")){
+					type = SudokuBoard::XSUDOKU;
+				}else if(!strcmp(argv[i+1],"asterisk")){
+					type = SudokuBoard::ASTERISK;
+				}else if(!strcmp(argv[i+1],"grid")){
+					type = SudokuBoard::GRID;
+				}else if(!strcmp(argv[i+1],"hypersudoku")){
+					type = SudokuBoard::HYPERSUDOKU;
+				}
+				i++;
 			} else if (!strcmp(argv[i],"--difficulty")){
 				if (argc <= i+1){
 					cout << "Please specify a difficulty." << endl;
@@ -240,7 +257,7 @@ int main(int argc, char *argv[]){
 			bool havePuzzle = false;
 			if (action == GENERATE){
 				// Generate a puzzle
-				havePuzzle = ss->generatePuzzleSymmetry(symmetry);
+				havePuzzle = ss->generatePuzzleSymmetry(symmetry, type);
 				if (!havePuzzle && printPuzzle){
 					cout << "Could not generate puzzle.";
 					if (printStyle==SudokuBoard::CSV){
@@ -449,6 +466,7 @@ void printHelp(){
 	cout << "qqwing <options>" << endl;
 	cout << "Sudoku solver and generator." << endl;
 	cout << "  --generate <num>     Generate new puzzles" << endl;
+	cout << "  --type <type>        Generate new puzzles of type: normal, xsudoku, asterisk, grid, hypersudoku" << endl;
 	cout << "  --solve              Solve all the puzzles from standard input" << endl;
 	cout << "  --difficulty <diff>  Generate only simple, easy, intermediate, expert, or any" << endl;
 	cout << "  --symmetry <sym>     Symmetry: none, rotate90, rotate180, mirror, flip, or random" << endl;

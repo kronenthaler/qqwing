@@ -69,6 +69,13 @@
 					FLIP,
 					RANDOM,
 				};
+				enum Type{
+					NORMAL,
+					XSUDOKU,
+					ASTERISK,
+					GRID,
+					HYPERSUDOKU
+				};
 				SudokuBoard();
 				bool setPuzzle(int* initPuzzle);
 				const int* getPuzzle();
@@ -84,6 +91,11 @@
 				void setPrintStyle(PrintStyle ps);
 				bool generatePuzzle();
 				bool generatePuzzleSymmetry(SudokuBoard::Symmetry symmetry);
+				bool generatePuzzleSymmetry(SudokuBoard::Symmetry symmetry, SudokuBoard::Type type);
+				void initializeXSudokuPuzzle();
+				void initializeAsteriskPuzzle();
+				void initializeGridPuzzle();
+				void initializeHyperSudokuPuzzle();
 				int getGivenCount();
 				int getSingleCount();
 				int getHiddenSingleCount();

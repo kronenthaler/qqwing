@@ -320,7 +320,10 @@ namespace qqwing {
 	}
 
 	bool SudokuBoard::generatePuzzleSymmetry(SudokuBoard::Symmetry symmetry){
+		return generatePuzzleSymmetry(symmetry, SudokuBoard::NORMAL);
+	}
 
+	bool SudokuBoard::generatePuzzleSymmetry(SudokuBoard::Symmetry symmetry, SudokuBoard::Type type){
 		if (symmetry == SudokuBoard::RANDOM) symmetry = getRandomSymmetry();
 
 		// Don't record history while generating.
@@ -330,6 +333,24 @@ namespace qqwing {
 		setLogHistory(false);
 
 		clearPuzzle();
+
+		switch(type){
+			case SudokuBoard::XSUDOKU:
+				initializeXSudokuPuzzle();
+				break;
+			case SudokuBoard::ASTERISK:
+				initializeAsteriskPuzzle();
+				break;
+			case SudokuBoard::GRID:
+				initializeGridPuzzle();
+				break;
+			case SudokuBoard::HYPERSUDOKU:
+				initializeHyperSudokuPuzzle();
+				break;
+			case SudokuBoard::NORMAL:
+			default:
+				break;
+		}
 
 		// Start by getting the randomness in order so that
 		// each puzzle will be different from the last.
@@ -423,6 +444,39 @@ namespace qqwing {
 
 		return true;
 
+	}
+
+	void SudokuBoard::initializeXSudokuPuzzle(){
+		//some rules are required.
+	}
+
+	void SudokuBoard::initializeAsteriskPuzzle(){
+		int positions[] = {13,20,24,37,40,43,56,60,67};
+		int values[9];
+		for(int i=0;i<9;i++)
+			values[i] = i+1;
+		shuffleArray(values, 9);
+
+		for(int i=0;i<9;i++){
+			puzzle[positions[i]] = values[i];
+		}
+	}
+
+	void SudokuBoard::initializeGridPuzzle(){
+		int values[9];
+		for(int i=0;i<9;i++)
+			values[i] = i+1;
+		shuffleArray(values, 9);
+
+		for(int i=1,k=0;i<9;i+=3){
+			for(int j=1;j<9;j+=3,k++){
+				puzzle[i*9+j]=values[k];
+			}
+		}
+	}
+
+	void SudokuBoard::initializeHyperSudokuPuzzle(){
+		//most rules go here...
 	}
 
 	void SudokuBoard::rollbackNonGuesses(){
