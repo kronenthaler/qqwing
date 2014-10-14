@@ -23,6 +23,8 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <algorithm>
+#include <stdio.h>
 
 #include "qqwing.hpp"
 
@@ -447,7 +449,58 @@ namespace qqwing {
 	}
 
 	void SudokuBoard::initializeXSudokuPuzzle(){
-		//some rules are required.
+		int sndDiag[9];
+		int mainDiag[9];
+		for(int i=0;i<9;i++){
+			mainDiag[i] = i+1;
+			sndDiag[i] = 0;
+		}
+		shuffleArray(mainDiag, 9);
+
+		//2nd diagonal
+		int options[9][9];
+		for(int i=0;i<9;i++){
+			for(int j=0;j<9;j++){
+				options[i][j] = j+1;
+			}
+		}
+
+		sndDiag[4] = mainDiag[4];
+		for(int count=0;count<8;count++){
+			int cell=0;
+			for(cell=0;cell<9;cell++)
+				if(sndDiag[cell] == 0) break;
+
+			int possibilities = 9;
+			//remove the vertical and diagonal in the main diag.
+			if(cell != 4){
+				options[cell][mainDiag[cell]-1] = 100; possibilities--;
+				options[cell][mainDiag[8-cell]-1] = 100; possibilities--;
+			}
+
+			//remove from its possibilities all the set values of sndDiag
+			for(int i=0;i<9;i++){
+				if(sndDiag[i] != 0 && options[cell][sndDiag[i]-1] < 100){
+					options[cell][sndDiag[i]-1] = 100;
+					possibilities--;
+				}
+			}
+
+			if(possibilities == 0){
+				initializeXSudokuPuzzle();
+				return;
+			}
+
+			//sort and pick one at random
+			std::sort(options[cell], options[cell]+9);
+			sndDiag[cell] = options[cell][rand()%possibilities];
+		}
+
+		//copy the cells into the diagonals
+		for(int i=0;i<9;i++){
+			puzzle[i*9+i] = mainDiag[i];
+			puzzle[(8-i)*9+i] = sndDiag[i];
+		}
 	}
 
 	void SudokuBoard::initializeAsteriskPuzzle(){
