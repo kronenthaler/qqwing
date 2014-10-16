@@ -96,6 +96,7 @@
 				void initializeAsteriskPuzzle();
 				void initializeGridPuzzle();
 				void initializeHyperSudokuPuzzle();
+				bool removeNeighborsHyperSudoku(int q2[], int q1[], int q4[], int incQ1[][2], int incQ4[][2]);
 				int getGivenCount();
 				int getSingleCount();
 				int getHiddenSingleCount();

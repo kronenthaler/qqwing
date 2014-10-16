@@ -449,37 +449,37 @@ namespace qqwing {
 	}
 
 	void SudokuBoard::initializeXSudokuPuzzle(){
-		int sndDiag[9];
-		int mainDiag[9];
-		for(int i=0;i<9;i++){
+		int sndDiag[ROW_COL_SEC_SIZE];
+		int mainDiag[ROW_COL_SEC_SIZE];
+		for(int i=0;i<ROW_COL_SEC_SIZE;i++){
 			mainDiag[i] = i+1;
 			sndDiag[i] = 0;
 		}
-		shuffleArray(mainDiag, 9);
+		shuffleArray(mainDiag, ROW_COL_SEC_SIZE);
 
 		//2nd diagonal
-		int options[9][9];
-		for(int i=0;i<9;i++){
-			for(int j=0;j<9;j++){
+		int options[ROW_COL_SEC_SIZE][ROW_COL_SEC_SIZE];
+		for(int i=0;i<ROW_COL_SEC_SIZE;i++){
+			for(int j=0;j<ROW_COL_SEC_SIZE;j++){
 				options[i][j] = j+1;
 			}
 		}
 
-		sndDiag[4] = mainDiag[4];
-		for(int count=0;count<8;count++){
+		sndDiag[ROW_COL_SEC_SIZE/2] = mainDiag[ROW_COL_SEC_SIZE/2];
+		for(int count=0;count<ROW_COL_SEC_SIZE-1;count++){
 			int cell=0;
-			for(cell=0;cell<9;cell++)
+			for(cell=0;cell<ROW_COL_SEC_SIZE;cell++)
 				if(sndDiag[cell] == 0) break;
 
-			int possibilities = 9;
+			int possibilities = ROW_COL_SEC_SIZE;
 			//remove the vertical and diagonal in the main diag.
-			if(cell != 4){
+			if(cell != ROW_COL_SEC_SIZE/2){
 				options[cell][mainDiag[cell]-1] = 100; possibilities--;
-				options[cell][mainDiag[8-cell]-1] = 100; possibilities--;
+				options[cell][mainDiag[ROW_COL_SEC_SIZE-1-cell]-1] = 100; possibilities--;
 			}
 
 			//remove from its possibilities all the set values of sndDiag
-			for(int i=0;i<9;i++){
+			for(int i=0;i<ROW_COL_SEC_SIZE;i++){
 				if(sndDiag[i] != 0 && options[cell][sndDiag[i]-1] < 100){
 					options[cell][sndDiag[i]-1] = 100;
 					possibilities--;
@@ -492,44 +492,148 @@ namespace qqwing {
 			}
 
 			//sort and pick one at random
-			std::sort(options[cell], options[cell]+9);
+			std::sort(options[cell], options[cell]+ROW_COL_SEC_SIZE);
 			sndDiag[cell] = options[cell][rand()%possibilities];
 		}
 
 		//copy the cells into the diagonals
-		for(int i=0;i<9;i++){
-			puzzle[i*9+i] = mainDiag[i];
-			puzzle[(8-i)*9+i] = sndDiag[i];
+		for(int i=0;i<ROW_COL_SEC_SIZE;i++){
+			puzzle[i*ROW_COL_SEC_SIZE+i] = mainDiag[i];
+			puzzle[(ROW_COL_SEC_SIZE-1-i)*ROW_COL_SEC_SIZE+i] = sndDiag[i];
 		}
 	}
 
 	void SudokuBoard::initializeAsteriskPuzzle(){
 		int positions[] = {13,20,24,37,40,43,56,60,67};
-		int values[9];
-		for(int i=0;i<9;i++)
+		int values[ROW_COL_SEC_SIZE];
+		for(int i=0;i<ROW_COL_SEC_SIZE;i++)
 			values[i] = i+1;
-		shuffleArray(values, 9);
+		shuffleArray(values, ROW_COL_SEC_SIZE);
 
-		for(int i=0;i<9;i++){
+		for(int i=0;i<ROW_COL_SEC_SIZE;i++){
 			puzzle[positions[i]] = values[i];
 		}
 	}
 
 	void SudokuBoard::initializeGridPuzzle(){
-		int values[9];
-		for(int i=0;i<9;i++)
+		int values[ROW_COL_SEC_SIZE];
+		for(int i=0;i<ROW_COL_SEC_SIZE;i++)
 			values[i] = i+1;
-		shuffleArray(values, 9);
+		shuffleArray(values, ROW_COL_SEC_SIZE);
 
-		for(int i=1,k=0;i<9;i+=3){
-			for(int j=1;j<9;j+=3,k++){
-				puzzle[i*9+j]=values[k];
+		for(int i=1,k=0;i<ROW_COL_SEC_SIZE;i+=GRID_SIZE){
+			for(int j=1;j<ROW_COL_SEC_SIZE;j+=GRID_SIZE,k++){
+				puzzle[i*ROW_COL_SEC_SIZE+j]=values[k];
 			}
 		}
 	}
 
 	void SudokuBoard::initializeHyperSudokuPuzzle(){
-		//most rules go here...
+		int q1[ROW_COL_SEC_SIZE];
+		int q2[ROW_COL_SEC_SIZE];
+		int q3[ROW_COL_SEC_SIZE];
+		int q4[ROW_COL_SEC_SIZE];
+
+		int incQ1[][2] = {{0,0},{0,1},{0,2}};
+		int incQ4[][2] = {{0,0},{1,0},{2,0}};
+
+		for(int attempts=0;attempts<10;attempts++){
+			for(int i=0;i<ROW_COL_SEC_SIZE;i++){
+				q1[i] = i+1;
+				q4[i] = i+1;
+				q2[i] = 0;
+				q3[i] = 0;
+			}
+			shuffleArray(q1, ROW_COL_SEC_SIZE);
+			shuffleArray(q4, ROW_COL_SEC_SIZE);
+
+			while(!removeNeighborsHyperSudoku(q2,q1,q4,incQ1,incQ4)){}
+			while(!removeNeighborsHyperSudoku(q3,q4,q1,incQ1,incQ4)){}
+
+			//set in the puzzle positions
+			for(int i=0;i<GRID_SIZE;i++){
+				for(int j=0;j<GRID_SIZE;j++){
+					int posQ1 = (i+1)*ROW_COL_SEC_SIZE + (j+1);
+					int posQ2 = (i+1)*ROW_COL_SEC_SIZE + (j+5);
+					int posQ3 = (i+5)*ROW_COL_SEC_SIZE + (j+1);
+					int posQ4 = (i+5)*ROW_COL_SEC_SIZE + (j+5);
+
+					puzzle[posQ1] = q1[i*GRID_SIZE+j];
+					puzzle[posQ2] = q2[i*GRID_SIZE+j];
+					puzzle[posQ3] = q3[i*GRID_SIZE+j];
+					puzzle[posQ4] = q4[i*GRID_SIZE+j];
+				}
+			}
+
+			attempts = 10000;
+		}
+	}
+
+	bool SudokuBoard::removeNeighborsHyperSudoku(int target[], int q1[], int q4[], int incQ1[][2], int incQ4[][2]){
+		int options[ROW_COL_SEC_SIZE][ROW_COL_SEC_SIZE];
+		int possibilities[ROW_COL_SEC_SIZE];//number of pos. of the section
+
+		for(int i=0;i<ROW_COL_SEC_SIZE;i++){
+			possibilities[i] = ROW_COL_SEC_SIZE;
+			for(int j=0;j<ROW_COL_SEC_SIZE;j++){
+				options[i][j] = j+1;
+			}
+		}
+
+		//check the indexes for Q4-Q1
+		//remove neighbors in q1 & q4
+		for(int i=0;i<GRID_SIZE;i++){
+			for(int j=0;j<GRID_SIZE;j++){
+				int q2x = i * GRID_SIZE + j;
+				for(int k=0;k<GRID_SIZE;k++){
+					int q1x = (i+incQ1[k][0])*GRID_SIZE + (incQ1[k][1]);
+					if(options[q2x][q1[q1x]-1] < 10){
+						possibilities[q2x]--;
+						options[q2x][q1[q1x]-1] = 100;
+					}
+					int q4x = (incQ4[k][0])*GRID_SIZE + (j+incQ4[k][1]);
+					if(options[q2x][q4[q4x]-1] < 10){
+						possibilities[q2x]--;
+						options[q2x][q4[q4x]-1] = 100;
+					}
+				}
+				std::sort(options[q2x], options[q2x]+ROW_COL_SEC_SIZE);
+			}
+		}
+
+		for(int count=0;count<ROW_COL_SEC_SIZE;count++){
+			//find the position with less options.
+			int min = 10;
+			int minx = -1;
+			for(int i=0;i<ROW_COL_SEC_SIZE;i++){
+				if(possibilities[i] < min){
+					min = possibilities[i];
+					minx = i;
+				}
+			}
+
+			if(minx == -1 || min == 0){
+				return false;
+			}
+
+			// pick one option at random and apply it.
+			target[minx] = options[minx][rand()%possibilities[minx]];
+			possibilities[minx] = 100;//get it out of the search
+
+			//remove that option of all the other cells.
+			for(int i=0;i<ROW_COL_SEC_SIZE;i++){
+				for(int j=0;j<ROW_COL_SEC_SIZE;j++){
+					if(options[i][j] == target[minx]){
+						options[i][j]=100;
+						possibilities[i]--;
+						break;
+					}
+				}
+				std::sort(options[i], options[i]+ROW_COL_SEC_SIZE);
+			}
+		}
+
+		return true;
 	}
 
 	void SudokuBoard::rollbackNonGuesses(){
